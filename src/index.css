@@ -462,3 +462,607 @@ h1:focus:not(:focus-visible) {
   display: inline-block;
   margin-bottom: 4px;
 }
+
+.panel .locked {
+  max-width: 22rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.panel input:disabled {
+  opacity: 0.45;
+}
+
+/* Lesson template */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.step-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.step-tab {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.step-tab:disabled {
+  color: var(--ink-soft);
+  border-style: dashed;
+  cursor: default;
+  opacity: 0.7;
+}
+
+.step-tab.step-here {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.step-num {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.lesson-step h2 {
+  font-size: 1.5rem;
+  scroll-margin-top: 8px;
+}
+
+.lesson-step h2:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.lesson-step h3 {
+  font-size: 1.1rem;
+  margin: 24px 0 8px;
+}
+
+.lede {
+  font-size: 1.15rem;
+}
+
+.lesson-step > .button,
+.lesson-step > .row,
+.puzzle > .button,
+.passed .button {
+  margin-top: 16px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choices {
+  border: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.choices legend {
+  font-weight: bold;
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.choices-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.choice input,
+.controls input,
+.scrub input {
+  accent-color: var(--accent);
+}
+
+.choice input:focus-visible,
+.controls input:focus-visible,
+.scrub input:focus-visible,
+.step-tab:focus-visible,
+.flap summary:focus-visible,
+.sources summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.flap,
+.sources {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  margin: 12px 0;
+  background: rgb(255 255 255 / 0.35);
+}
+
+.flap summary,
+.sources summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: bold;
+}
+
+.flap-body {
+  padding: 0 14px 4px;
+}
+
+.flap-deeper {
+  border-style: dashed;
+}
+
+.flap-tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--ink-soft);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: normal;
+  font-variant: small-caps;
+  color: var(--ink-soft);
+}
+
+.sources {
+  margin-top: 48px;
+  font-size: 0.9rem;
+}
+
+.sources ul {
+  margin: 0;
+  padding: 0 14px 12px 32px;
+}
+
+.playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+}
+
+.scrub {
+  display: grid;
+  flex: 1 1 12rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.readout {
+  font-variant-numeric: tabular-nums;
+}
+
+.controls {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.controls label {
+  display: grid;
+  gap: 4px;
+}
+
+.controls .button {
+  justify-self: start;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.key {
+  display: inline-block;
+  width: 24px;
+  height: 0;
+  margin-right: 4px;
+  vertical-align: middle;
+  border-top: 3px solid var(--accent);
+}
+
+.key-ghost {
+  border-top: 3px dashed var(--ink-soft);
+}
+
+.key-strobe {
+  border-top: 2px dotted var(--ink);
+}
+
+.goals {
+  list-style: none;
+  padding: 0;
+}
+
+.goal {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 2px 0;
+}
+
+.goal-box {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.1em;
+  height: 1.1em;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.goal-done {
+  color: var(--ink-soft);
+}
+
+.goal-done .goal-box {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.found {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
+
+.puzzle {
+  margin-top: 24px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+.result {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--stamp-ink);
+  border-radius: 4px;
+}
+
+.result p {
+  margin: 4px 0 0;
+}
+
+.result-pass {
+  border-color: var(--ink);
+  border-left-width: 4px;
+}
+
+.result-lines {
+  margin: 0;
+  padding-left: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hints {
+  margin-top: 12px;
+}
+
+.hint-rung {
+  margin: 8px 0;
+  padding: 4px 12px;
+  border-left: 3px solid var(--accent);
+}
+
+.hint-name {
+  margin: 0;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+.marker-input > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.marker-key {
+  display: inline-block;
+  width: 24px;
+  border-top: 3px solid var(--ink);
+}
+
+.marker-key.sv-shot-b {
+  border-top-style: dashed;
+}
+
+.marker-key.sv-shot-c {
+  border-top-style: dotted;
+}
+
+.sv-highlight-text {
+  font-weight: bold;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 3px;
+}
+
+.passed {
+  margin-top: 24px;
+  padding: 12px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+}
+
+.passed p {
+  margin: 0;
+}
+
+.reward-stamp {
+  display: flex;
+  justify-content: center;
+}
+
+.stamp-press .stamp {
+  animation: stamp-press 600ms cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+}
+
+@keyframes stamp-press {
+  from {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.issued {
+  margin-top: 24px;
+}
+
+.figure {
+  margin: 12px 0;
+}
+
+.figure svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.figure figcaption {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.fig-impetus {
+  fill: none;
+  stroke: var(--stamp-ink);
+  stroke-width: 1.2;
+}
+
+.fig-real {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+
+.fig-label {
+  font-size: 4px;
+  fill: var(--ink);
+}
+
+/* Side views (lesson scenes) */
+
+.side-view {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 12px 0 0;
+  border-radius: 6px;
+}
+
+.sketch-pad {
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.sv-sky {
+  fill: #cfe3ee;
+}
+
+.sv-ground {
+  fill: #9fb37a;
+}
+
+.sv-sea {
+  fill: #5b8fae;
+}
+
+.sv-tick,
+.sv-label {
+  fill: var(--ink);
+}
+
+.sv-cliff {
+  fill: #b9a582;
+}
+
+.sv-cannon,
+.sv-wheel {
+  fill: var(--ink);
+}
+
+.sv-rider {
+  fill: var(--ink);
+  stroke: var(--ink);
+  stroke-width: 0.12;
+}
+
+.sv-cart,
+.sv-wall {
+  fill: #a0522d;
+}
+
+.sv-pole {
+  stroke: var(--ink);
+  stroke-width: 0.15;
+}
+
+.sv-ball {
+  fill: var(--ink);
+}
+
+.sv-ball-dropped {
+  fill: var(--stamp-ink);
+}
+
+.sv-real,
+.sv-sketch,
+.sv-ghost,
+.sv-old,
+.sv-shot,
+.sv-strobe-line,
+.sv-dropline,
+.sv-aim,
+.sv-arrow {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sv-real {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.sv-sketch {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.sv-ghost {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 5;
+  opacity: 0.7;
+}
+
+.sv-old {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  opacity: 0.45;
+}
+
+.sv-strobe-line {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.sv-strobe {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.15;
+}
+
+.sv-start {
+  fill: none;
+  stroke: var(--stamp-ink);
+  stroke-width: 0.4;
+  stroke-dasharray: 0.8 0.6;
+}
+
+.sv-dropline {
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.sv-arrow {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.sv-arrowhead {
+  fill: var(--ink);
+}
+
+.sv-highlight .sv-arrow {
+  stroke: var(--stamp-ink);
+  stroke-width: 4;
+}
+
+.sv-highlight .sv-label {
+  fill: var(--stamp-ink);
+  font-weight: bold;
+}
+
+.sv-shot {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.sv-aim {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.sv-shot-b {
+  stroke-dasharray: 7 4;
+}
+
+.sv-shot-c {
+  stroke-dasharray: 1.5 4;
+}
+
+.sv-marker {
+  fill: var(--accent);
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.card .side-view {
+  margin-top: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-press .stamp {
+    animation: none;
+  }
+}

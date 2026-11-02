@@ -1,27 +1,63 @@
-import { useEffect, useMemo, useRef } from 'react'
-import {
-  vacuumApexHeight,
-  vacuumFlightTime,
-  vacuumPositionAt,
-  vacuumTrajectory,
-  type LaunchParams,
-} from '../physics/trajectory'
-import { FLAGS, RANGE_LENGTH, TRAIL_STEPS, WALL } from './rangeLayout'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { vacuumFlightTime, vacuumPositionAt, vacuumTrajectory, type LaunchParams } from '../physics/trajectory'
+import { frameFor, tickStep } from './frame'
+import { FLAGS, TRAIL_STEPS, WALL } from './rangeLayout'
 
 type Props = { launch: LaunchParams; shot: number; reducedMotion: boolean }
 
 const PAUSE_AFTER_LANDING = 1.2 // s, then the shot replays
+const FAR = 1000 // m of sky and ground drawn beyond the frame, for the letterbox space
+const MAX_ZOOM = 2.5 // how much closer than "whole shot across the width" a tall screen may go
+const SHOT_SHARE = 0.5 // share of the screen height the shot may fill (the control panel covers the top)
 
 // Side-view SVG fallback; reuses the same physics output as the 3D scene.
+// The view is framed to the shot rather than the whole range. Where the screen is tall and narrow
+// (a portrait phone), fitting the whole shot across the width would leave it tiny under empty sky,
+// so the view zooms in, up to MAX_ZOOM, and pans to follow the ball.
 export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
+  const svg = useRef<SVGSVGElement>(null)
   const ball = useRef<SVGCircleElement>(null)
   const trail = useRef<SVGPolylineElement>(null)
+  const [screen, setScreen] = useState({ w: 0, h: 0 })
+
+  useEffect(() => {
+    const el = svg.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) =>
+      setScreen({ w: entry.contentRect.width, h: entry.contentRect.height }),
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const flightTime = vacuumFlightTime(launch)
   const samples = useMemo(() => vacuumTrajectory(launch, TRAIL_STEPS), [launch])
-  const top = Math.max(vacuumApexHeight(launch) * 1.15, 20)
+  const frame = frameFor(
+    samples.map((s) => s.pos),
+    { minWidth: 45, minAspect: 0.2 },
+  )
+  const frameWidth = frame.x1 - frame.x0
+
+  // Metres shown across the screen, and whether the view has to pan to follow the ball.
+  let viewWidth = frameWidth
+  if (screen.w > 0 && screen.h > 0 && !reducedMotion) {
+    const fitWidth = screen.w / frameWidth // px per metre with the whole shot across the screen
+    const fitHeight = (screen.h * SHOT_SHARE) / frame.top
+    const scale = Math.max(fitWidth, Math.min(fitHeight, fitWidth * MAX_ZOOM))
+    viewWidth = Math.min(frameWidth, screen.w / scale)
+  }
+  const follow = viewWidth < frameWidth - 0.5
+  const u = viewWidth / 100 // about 1% of the screen width, for sizes that should look constant
+  const viewHeight = follow ? (viewWidth * screen.h) / screen.w : frame.top + 4 * u
+  const step = tickStep(viewWidth)
+  const marks = Array.from({ length: Math.floor(FAR / step) }, (_, i) => i * step)
+  const bottom = 4 * u
 
   useEffect(() => {
+    const viewBoxAt = (x: number) => {
+      const x0 = follow ? Math.min(Math.max(x - viewWidth * 0.35, frame.x0), frame.x1 - viewWidth) : frame.x0
+      return `${x0} ${bottom - viewHeight} ${viewWidth} ${viewHeight}`
+    }
     const show = (t: number) => {
       const pos = vacuumPositionAt(launch, t)
       const n = Math.ceil((Math.min(t, flightTime) / flightTime) * TRAIL_STEPS)
@@ -30,6 +66,7 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
       trail.current?.setAttribute('points', pts.join(' '))
       ball.current?.setAttribute('cx', String(pos.x))
       ball.current?.setAttribute('cy', String(-pos.y))
+      svg.current?.setAttribute('viewBox', viewBoxAt(pos.x))
     }
     // Reduced motion: show the finished shot without animating it.
     if (reducedMotion) {
@@ -48,21 +85,22 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [launch, shot, samples, flightTime, reducedMotion])
+  }, [launch, shot, samples, flightTime, reducedMotion, follow, viewWidth, viewHeight, bottom, frame.x0, frame.x1])
 
   return (
     <svg
+      ref={svg}
       className="flight-2d"
-      viewBox={`-5 ${-top} ${RANGE_LENGTH + 10} ${top + 4}`}
-      preserveAspectRatio="xMidYMax meet"
+      viewBox={`${frame.x0} ${bottom - viewHeight} ${viewWidth} ${viewHeight}`}
+      preserveAspectRatio="xMinYMax meet"
       role="img"
       aria-label="Side view of the shot"
     >
-      <rect x={-5} y={-top} width={RANGE_LENGTH + 10} height={top} fill="#cfe3ee" />
-      <rect x={-5} y={0} width={RANGE_LENGTH + 10} height={4} fill="#9fb37a" />
-      {Array.from({ length: RANGE_LENGTH / 10 + 1 }, (_, i) => (
-        <text key={i} x={i * 10} y={2.8} fontSize={1.8} textAnchor="middle" fill="#2a2420">
-          {i * 10}
+      <rect x={-FAR} y={-FAR} width={2 * FAR} height={FAR} fill="#cfe3ee" />
+      <rect x={-FAR} y={0} width={2 * FAR} height={FAR} fill="#9fb37a" />
+      {marks.map((x) => (
+        <text key={x} x={x} y={2.8 * u} fontSize={2.2 * u} textAnchor="middle" fill="#2a2420">
+          {x}
         </text>
       ))}
       <rect x={WALL.x - WALL.thickness / 2} y={-WALL.height} width={WALL.thickness} height={WALL.height} fill="#a0522d" />
@@ -73,7 +111,7 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
         </g>
       ))}
       <polyline ref={trail} fill="none" stroke="#e8a33d" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <circle ref={ball} r={1.2} fill="#2a2420" />
+      <circle ref={ball} r={Math.max(0.4, 1.1 * u)} fill="#2a2420" />
     </svg>
   )
 }
