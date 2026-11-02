@@ -31,7 +31,7 @@ export const LESSONS: readonly Lesson[] = [
     title: 'The arc',
     hook: 'A cannon on a cliff fires a ball straight out to sea. At the same moment, a ball is dropped from the same height. Which hits the water first?',
     unlocks: 'Launch speed and angle',
-    built: false,
+    built: true,
   },
   {
     id: 'two-ways-to-hit',

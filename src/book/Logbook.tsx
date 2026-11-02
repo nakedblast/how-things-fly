@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { MYTH_FIGURES } from '../lessons/registry'
 import { LESSONS } from './lessons'
 import { href } from './router'
 import { Stamp } from './Stamp'
@@ -53,15 +54,23 @@ export function Logbook() {
           </p>
         ) : (
           <ul className="cards">
-            {notes.map(({ lesson, variant }) => (
+            {notes.map(({ lesson, variant }) => {
+              const Figure = MYTH_FIGURES[lesson.id]
+              return (
               <li key={lesson.id} className={variant === 'changed-my-mind' ? 'card card-changed' : 'card'}>
                 <p className="card-variant">{variant === 'changed-my-mind' ? 'Changed my mind' : 'Saw through it'}</p>
                 <h3>{lesson.myth}</h3>
                 <p className="card-source">
                   Lesson {lesson.number}: {lesson.title}
                 </p>
+                {Figure && (
+                  <Suspense fallback={null}>
+                    <Figure />
+                  </Suspense>
+                )}
               </li>
-            ))}
+              )
+            })}
           </ul>
         )}
       </section>

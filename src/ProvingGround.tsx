@@ -3,6 +3,7 @@ import FlightView2D from './scenes/FlightView2D'
 import { FrameMeter } from './FrameMeter'
 import { vacuumApexHeight, vacuumRange } from './physics/trajectory'
 import { href } from './book/router'
+import { useProgress } from './book/useProgress'
 
 // three.js and R3F load only when the 3D view is shown.
 const FlightScene = lazy(() => import('./scenes/FlightScene'))
@@ -30,6 +31,8 @@ export default function ProvingGround() {
   const [angleDeg, setAngleDeg] = useState(35)
   const [speed, setSpeed] = useState(30)
   const [view, setView] = useState<View>(initialView)
+  // Launch speed and angle are issued by lesson 1's stamp; until then the range fires a fixed shot.
+  const aimIssued = Boolean(useProgress().lessons['the-arc']?.stampEarnedAt)
   const [shot, setShot] = useState(0)
   const launch = useMemo(() => ({ speed, angleDeg }), [speed, angleDeg])
   const range = vacuumRange(launch)
@@ -43,12 +46,34 @@ export default function ProvingGround() {
         <h1 tabIndex={-1}>The proving ground</h1>
         <label>
           Launch angle: {angleDeg}°
-          <input type="range" min={5} max={85} value={angleDeg} onChange={(e) => setAngleDeg(Number(e.target.value))} />
+          <input
+            type="range"
+            min={5}
+            max={85}
+            value={angleDeg}
+            disabled={!aimIssued}
+            aria-describedby={aimIssued ? undefined : 'aim-locked'}
+            onChange={(e) => setAngleDeg(Number(e.target.value))}
+          />
         </label>
         <label>
           Launch speed: {speed} m/s
-          <input type="range" min={10} max={35} value={speed} onChange={(e) => setSpeed(Number(e.target.value))} />
+          <input
+            type="range"
+            min={10}
+            max={35}
+            value={speed}
+            disabled={!aimIssued}
+            aria-describedby={aimIssued ? undefined : 'aim-locked'}
+            onChange={(e) => setSpeed(Number(e.target.value))}
+          />
         </label>
+        {!aimIssued && (
+          <p id="aim-locked" className="locked">
+            Locked. Earn the stamp in <a href={href({ name: 'lesson', id: 'the-arc' })}>lesson 1, The arc</a> to set
+            your own angle and speed.
+          </p>
+        )}
         <div className="row">
           <button type="button" onClick={() => setShot((s) => s + 1)}>
             Fire again

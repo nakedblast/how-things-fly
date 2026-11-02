@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
+import { LESSON_MODULES } from '../lessons/registry'
 import { ACTS, LESSONS, lessonById } from './lessons'
 import { href } from './router'
 import { progressStore } from './useProgress'
@@ -8,6 +9,7 @@ export function LessonPage({ id }: { id: string }) {
   const index = LESSONS.indexOf(lesson)
   const prev = LESSONS[index - 1]
   const next = LESSONS[index + 1]
+  const Module = lesson.built ? LESSON_MODULES[lesson.id] : undefined
 
   useEffect(() => {
     progressStore.openLesson(id)
@@ -19,11 +21,17 @@ export function LessonPage({ id }: { id: string }) {
         Lesson {lesson.number} · Act {lesson.act}: {ACTS[lesson.act]}
       </p>
       <h1 tabIndex={-1}>{lesson.title}</h1>
-      <section className="brief" aria-label="Range task">
-        <h2>Range task</h2>
-        <p>{lesson.hook}</p>
-      </section>
-      {!lesson.built && (
+      {Module ? (
+        <Suspense fallback={<p className="hint">Opening the lesson…</p>}>
+          <Module />
+        </Suspense>
+      ) : (
+        <section className="brief" aria-label="Range task">
+          <h2>Range task</h2>
+          <p>{lesson.hook}</p>
+        </section>
+      )}
+      {!Module && (
         <section className="soon">
           <h2>Coming soon</h2>
           <p>
