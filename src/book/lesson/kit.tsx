@@ -1,6 +1,6 @@
 // Building blocks every lesson uses, so each lesson follows the same loop and looks the same.
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Confidence } from '../progress'
 import { reducedMotion, type Playback } from './playback'
 import { STEP_LABELS, type LessonFlow } from './useLessonFlow'
@@ -33,9 +33,16 @@ export function StepNav({ flow }: { flow: LessonFlow }) {
 
 /** One step of the loop: its heading takes focus when the step opens. */
 export function Step({ title, children }: { title: string; children: ReactNode }) {
+  const heading = useRef<HTMLHeadingElement>(null)
+  // A step can replace itself (a committed prediction opens the next part): if the control that
+  // had focus went with it, keyboard and screen-reader users continue from the new heading.
+  useEffect(() => {
+    const active = document.activeElement
+    if (!active || active === document.body || !active.isConnected) heading.current?.focus({ preventScroll: true })
+  }, [title])
   return (
     <section className="lesson-step">
-      <h2 tabIndex={-1}>{title}</h2>
+      <h2 ref={heading} tabIndex={-1}>{title}</h2>
       {children}
     </section>
   )

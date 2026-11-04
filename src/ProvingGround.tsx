@@ -350,7 +350,9 @@ export default function ProvingGround() {
       <div className="stage proving-stage">
         {view === '3d' ? (
           <Suspense fallback={<p className="loading">Loading 3D view…</p>}>
-            <FlightScene path={path} ghost={ghost} shot={shot} reducedMotion={reducedMotion} />
+            <div className="flight-3d" role="img" aria-label="3D view of the shot">
+              <FlightScene path={path} ghost={ghost} shot={shot} reducedMotion={reducedMotion} />
+            </div>
           </Suspense>
         ) : (
           <FlightView2D path={path} ghost={ghost} shot={shot} reducedMotion={reducedMotion} />

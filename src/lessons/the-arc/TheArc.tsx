@@ -217,20 +217,15 @@ function PredictPath({ onNext }: { onNext: () => void }) {
         {path.length > 1 && <polyline points={pathPoints(path)} className="sv-sketch" />}
       </CliffScene>
       <div className="row">
-        {mode === 'draw' ? (
-          <>
-            <button type="button" className="button" disabled={points.length === 0} onClick={() => setPoints([])}>
-              Clear
-            </button>
-            <button type="button" className="button" onClick={() => setMode('pick')}>
-              Pick a shape instead
-            </button>
-          </>
-        ) : (
-          <button type="button" className="button" onClick={() => setMode('draw')}>
-            Draw it instead
+        {mode === 'draw' && (
+          <button type="button" className="button" disabled={points.length === 0} onClick={() => setPoints([])}>
+            Clear
           </button>
         )}
+        {/* One button that changes its label, so keyboard focus stays on it. */}
+        <button type="button" className="button" onClick={() => setMode(mode === 'draw' ? 'pick' : 'draw')}>
+          {mode === 'draw' ? 'Pick a shape instead' : 'Draw it instead'}
+        </button>
       </div>
       {mode === 'pick' && (
         <Choices legend="Which shape?" name="shape" options={SHAPES} value={picked} onChange={setPicked} />
