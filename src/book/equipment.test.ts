@@ -17,16 +17,20 @@ describe('controlState', () => {
     store.awardStamp('the-arc')
     expect(controlState(equipment('speed'), store.getSnapshot())).toBe('issued')
     expect(controlState(equipment('angle'), store.getSnapshot())).toBe('issued')
-    expect(controlState(equipment('air'), store.getSnapshot())).toBe('early-issue')
+    expect(controlState(equipment('air'), store.getSnapshot())).toBe('locked')
   })
 
   it('issues working equipment early while its lesson is not built', () => {
-    for (const id of ['air', 'airDensity', 'mass', 'diameter']) {
+    for (const id of ['mass', 'diameter']) {
       expect(controlState(equipment(id), emptyProgress())).toBe('early-issue')
     }
+  })
+
+  it('locks the air controls until the lesson 3 stamp, then issues them', () => {
     const store = createProgressStore(null)
+    for (const id of ['air', 'airDensity']) expect(controlState(equipment(id), store.getSnapshot())).toBe('locked')
     store.awardStamp('air-fights-back')
-    expect(controlState(equipment('air'), store.getSnapshot())).toBe('issued')
+    for (const id of ['air', 'airDensity']) expect(controlState(equipment(id), store.getSnapshot())).toBe('issued')
   })
 
   it('keeps unbuilt equipment unavailable even with its lesson stamp', () => {

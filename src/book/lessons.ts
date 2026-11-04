@@ -49,9 +49,9 @@ export const LESSONS: readonly Lesson[] = [
     number: 3,
     act: 2,
     title: 'Air fights back',
-    hook: 'Once air gets in the way, does a ball still come down along the same curve it went up?',
+    hook: 'A ball machine fires a tennis ball 45° up. Now that there is air, does the way down mirror the way up?',
     unlocks: 'Air switch and air density',
-    built: false,
+    built: true,
   },
   {
     id: 'heavy-and-light',

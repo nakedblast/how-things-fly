@@ -1,6 +1,6 @@
 // Building blocks every lesson uses, so each lesson follows the same loop and looks the same.
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Confidence } from '../progress'
 import { reducedMotion, type Playback } from './playback'
 import { STEP_LABELS, type LessonFlow } from './useLessonFlow'
@@ -222,4 +222,54 @@ export function PlaybackControls({ playback, duration }: { playback: Playback; d
       </label>
     </div>
   )
+}
+
+export interface RecallQuestion {
+  id: string
+  question: ReactNode
+  options: readonly { value: string; label: ReactNode }[]
+  answer: string
+  /** One or two sentences, shown with the answer whatever the learner chose. */
+  explain: ReactNode
+}
+
+/**
+ * Retrieval practice on earlier lessons (LESSON_DESIGN.md, step "Recall"): never graded or saved;
+ * the answer is shown as soon as the learner picks one.
+ */
+export function Recall({ questions, onNext }: { questions: readonly RecallQuestion[]; onNext: () => void }) {
+  const [answers, setAnswers] = useState<Record<string, string>>({})
+  return (
+    <Step title="Recall">
+      <p>Two quick questions from earlier lessons. Nothing is scored.</p>
+      {questions.map((q) => {
+        const picked = answers[q.id]
+        return (
+          <div key={q.id} className="recall">
+            <Choices
+              legend={q.question}
+              name={`recall-${q.id}`}
+              options={q.options}
+              value={picked ?? null}
+              onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))}
+              disabled={picked !== undefined}
+            />
+            {picked !== undefined && (
+              <p className={picked === q.answer ? 'result result-pass' : 'result'} role="status">
+                {picked === q.answer ? 'Yes. ' : `It's “${labelText(q, q.answer)}”. `}
+                {q.explain}
+              </p>
+            )}
+          </div>
+        )
+      })}
+      <button type="button" className="button button-primary" onClick={onNext}>
+        On to the range task
+      </button>
+    </Step>
+  )
+}
+
+function labelText(q: RecallQuestion, value: string): ReactNode {
+  return q.options.find((o) => o.value === value)?.label
 }

@@ -24,7 +24,8 @@ export function SideView({ frame, label, sea, ticks = true, className, children,
   const step = tickStep(width)
   const font = width / 34
   const marks: number[] = []
-  for (let x = Math.ceil(frame.x0 / step) * step; x <= frame.x1; x += step) if (x >= 0) marks.push(x)
+  // A label right at the edge would be cut in half, so the last mark stops short of it.
+  for (let x = Math.ceil(frame.x0 / step) * step; x <= frame.x1 - width * 0.04; x += step) if (x >= 0) marks.push(x)
 
   return (
     <svg
