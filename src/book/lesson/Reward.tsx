@@ -10,7 +10,18 @@ import { reducedMotion } from './playback'
  * The end of a lesson: the stamp is pressed, the myth card is filed and the new control is issued.
  * Skippable; everything shown here stays in the logbook.
  */
-export function Reward({ lesson, figure, unlockNote }: { lesson: Lesson; figure: ReactNode; unlockNote: string }) {
+export function Reward({
+  lesson,
+  figure,
+  unlockNote,
+  changedNote = 'You started out with the old idea, the same one gunners held for centuries, and then proved the real one.',
+}: {
+  lesson: Lesson
+  figure: ReactNode
+  unlockNote: string
+  /** The "Changed my mind" sentence: who else held the old idea. */
+  changedNote?: string
+}) {
   const saved = useProgress().lessons[lesson.id]
   const changed = saved?.myth?.variant === 'changed-my-mind'
   const medals = saved?.medals ?? []
@@ -30,7 +41,7 @@ export function Reward({ lesson, figure, unlockNote }: { lesson: Lesson; figure:
         <h3 id="reward-card">Field note: {lesson.myth}</h3>
         <p>
           {changed
-            ? 'You started out with the old idea, the same one gunners held for centuries, and then proved the real one.'
+            ? changedNote
             : 'You never fell for it: your prediction already had the real idea.'}
         </p>
         {figure}

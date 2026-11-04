@@ -544,7 +544,8 @@ h1:focus:not(:focus-visible) {
   margin: 0;
 }
 
-.panel .rack-switch {
+.panel .rack-switch,
+.controls .rack-switch {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1197,4 +1198,13 @@ h1:focus:not(:focus-visible) {
   .stamp-press .stamp {
     animation: none;
   }
+}
+
+.recall + .recall {
+  margin-top: 12px;
+}
+
+.sv-old-vacuum {
+  stroke: var(--ink);
+  stroke-dasharray: 6 5;
 }

@@ -35,10 +35,10 @@ export function frameFor(points: readonly { x: number; y: number }[], options: F
   return { x0, x1: x0 + width, top }
 }
 
-/** A tick spacing that gives roughly 5–12 labelled distance marks across the frame. */
+/** A tick spacing that gives roughly 4–9 labelled distance marks across the frame, so labels never touch. */
 export function tickStep(width: number): number {
-  for (const s of [5, 10, 20, 25, 50, 100]) if (width / s <= 12) return s
-  return 200
+  for (const s of [5, 10, 20, 25, 50, 100, 200]) if (width / s <= 9) return s
+  return 500
 }
 
 /** A size in metres that looks about the same on screen whatever the frame: `size(frame, 1)` is 1% of the width. */
