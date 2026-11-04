@@ -2,7 +2,9 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import FlightView2D from './scenes/FlightView2D'
 import { FrameMeter } from './FrameMeter'
 import { SEA_LEVEL_AIR_DENSITY } from './physics/flight'
-import { dragPath, vacuumPath } from './physics/path'
+import { simulateDart } from './physics/dart'
+import { dartPath, dragPath, vacuumPath } from './physics/path'
+import { rangeDart, stopX } from './lessons/staying-pointed/scenario'
 import { controlState, EQUIPMENT, type ControlId } from './book/equipment'
 import { lessonById } from './book/lessons'
 import type { RangeSetup } from './book/progress'
@@ -29,6 +31,8 @@ const RANGE_LIMITS = {
   diameter: { min: 20, max: 250, step: 1, unit: 'mm' },
 } as const
 const SPHERE_DRAG_COEFFICIENT = 0.47
+// The lesson 5 training dart with its weight at the nose.
+const RANGE_DART = rangeDart(stopX('nose')).dart
 const SAVE_DELAY_MS = 300
 
 type NumericSetting = keyof typeof RANGE_LIMITS
@@ -95,11 +99,16 @@ export default function ProvingGround() {
   const airDensity = usable('airDensity') ? setup.airDensity : DEFAULT_RANGE_SETUP.airDensity
   const mass = usable('mass') ? setup.mass : DEFAULT_RANGE_SETUP.mass
   const diameter = usable('diameter') ? setup.diameter : DEFAULT_RANGE_SETUP.diameter
-  const effectiveSetup: RangeSetup = { speed, angleDeg, air, airDensity, mass, diameter }
+  const fins = usable('fins') ? setup.fins ?? false : false
+  const effectiveSetup: RangeSetup = { speed, angleDeg, air, airDensity, mass, diameter, fins }
 
   const { path, ghost } = useMemo(() => {
     const launch = { speed, angleDeg }
     const noAir = vacuumPath(launch)
+    if (fins) {
+      const flight = simulateDart({ dart: RANGE_DART, speed, elevationDeg: angleDeg, airDensity: air ? airDensity : 0, timeStep: 1 / 500 })
+      return { path: dartPath(flight), ghost: air ? noAir : undefined }
+    }
     if (!air) return { path: noAir, ghost: undefined }
     return {
       path: dragPath({
@@ -109,7 +118,7 @@ export default function ProvingGround() {
       }),
       ghost: noAir,
     }
-  }, [speed, angleDeg, air, airDensity, mass, diameter])
+  }, [speed, angleDeg, air, airDensity, mass, diameter, fins])
 
   return (
     <main className="app proving-ground">
@@ -159,7 +168,18 @@ export default function ProvingGround() {
                       </>
                     ) : (
                       <>
-                        {e.id === 'air' ? (
+                        {e.id === 'fins' ? (
+                          <label className="rack-switch">
+                            <input
+                              type="checkbox"
+                              checked={fins}
+                              disabled={!usable(e.id)}
+                              aria-describedby={descriptionId}
+                              onChange={(event) => setSetup({ ...setup, fins: event.target.checked })}
+                            />
+                            Fly: {fins ? 'the finned dart' : 'the range ball'}
+                          </label>
+                        ) : e.id === 'air' ? (
                           <label className="rack-switch">
                             <input
                               type="checkbox"
@@ -189,6 +209,7 @@ export default function ProvingGround() {
                         )}
                         <p className="equipment-state" id={descriptionId}>
                           {state === 'issued' && 'Issued'}
+                          {e.id === 'fins' && fins && usable(e.id) && '. The dart has its own mass and size (410 g, 25 mm), so the mass and diameter controls apply only to the ball. With no air, nothing turns it: it keeps its launch angle.'}
                           {state === 'early-issue' && <>Early issue. {e.note}</>}
                           {state === 'locked' && (
                             <>

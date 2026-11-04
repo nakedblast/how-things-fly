@@ -71,7 +71,7 @@ export const LESSONS: readonly Lesson[] = [
     title: 'Staying pointed: fins and feathers',
     hook: 'Why does an arrow carry its feathers at the back and not at the front?',
     unlocks: 'Fin-stabilised projectiles',
-    built: false,
+    built: true,
   },
   {
     id: 'spin',

@@ -20,7 +20,7 @@ export const EQUIPMENT: readonly Equipment[] = [
   { id: 'airDensity', lessonId: 'air-fights-back', label: 'Air density', note: 'Lesson 3 issues air density, from a vacuum to air thicker than at sea level.', working: true },
   { id: 'mass', lessonId: 'heavy-and-light', label: 'Mass', note: "Lesson 4 isn't written yet, so the mass control is yours early.", working: true },
   { id: 'diameter', lessonId: 'heavy-and-light', label: 'Diameter', note: "Lesson 4 isn't written yet, so the diameter control is yours early.", working: true },
-  { id: 'fins', lessonId: 'staying-pointed', label: 'Fins and feathers', note: 'Lesson 5 issues fins and feathers to keep a projectile pointed.', working: false },
+  { id: 'fins', lessonId: 'staying-pointed', label: 'Fins and feathers', note: 'Lesson 5 issues the finned dart, which flies nose-first.', working: true },
   { id: 'spinRate', lessonId: 'spin', label: 'Spin rate', note: 'Lesson 6 issues the spin control for your projectiles.', working: false },
   { id: 'spinAxis', lessonId: 'magnus', label: 'Spin axis', note: 'Lesson 7 issues the spin axis control to explore curved flight.', working: false },
   { id: 'profile', lessonId: 'shape-is-speed', label: 'Profile designer', note: 'Lesson 8 issues the tools to change projectile shape.', working: false },

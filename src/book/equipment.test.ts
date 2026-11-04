@@ -33,6 +33,13 @@ describe('controlState', () => {
     for (const id of ['air', 'airDensity']) expect(controlState(equipment(id), store.getSnapshot())).toBe('issued')
   })
 
+  it('locks the finned dart until the lesson 5 stamp, then issues it', () => {
+    const store = createProgressStore(null)
+    expect(controlState(equipment('fins'), store.getSnapshot())).toBe('locked')
+    store.awardStamp('staying-pointed')
+    expect(controlState(equipment('fins'), store.getSnapshot())).toBe('issued')
+  })
+
   it('keeps unbuilt equipment unavailable even with its lesson stamp', () => {
     const store = createProgressStore(null)
     for (const e of EQUIPMENT.filter((e) => !e.working)) {

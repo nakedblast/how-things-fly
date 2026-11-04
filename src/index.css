@@ -1208,3 +1208,162 @@ h1:focus:not(:focus-visible) {
   stroke: var(--ink);
   stroke-dasharray: 6 5;
 }
+
+/* Lesson 5: darts, drawn in their own body frame and scaled, so strokes do not scale. */
+.dart-body,
+.dart-weight,
+.dart-point,
+.dart-camera,
+.dart-cork,
+.dart-nock,
+.dart-fin,
+.dart-feather,
+.dart-skirt,
+.dart-ghost,
+.dart-cg,
+.dart-cp {
+  stroke: var(--ink);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+
+.dart-body {
+  fill: #d8cbb0;
+}
+
+.dart-weight {
+  fill: #b8862b;
+}
+
+.dart-point {
+  fill: #6d6d6d;
+}
+
+.dart-camera {
+  fill: var(--ink);
+}
+
+.dart-cork {
+  fill: #e9dcc0;
+}
+
+.dart-nock,
+.dart-fin {
+  fill: var(--stamp-ink);
+}
+
+.dart-feather,
+.dart-skirt {
+  fill: #fbf8f0;
+}
+
+.dart-ghost {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.6;
+}
+
+.dart-strobe {
+  opacity: 0.45;
+}
+
+.dart-cg {
+  fill: #fbf8f0;
+  stroke-width: 1.5;
+}
+
+.dart-cg-fill {
+  fill: var(--ink);
+}
+
+.dart-cp {
+  fill: none;
+  stroke: #1f6f8b;
+  stroke-width: 2.5;
+}
+
+.dart-cp-head {
+  fill: #1f6f8b;
+}
+
+.sv-thin {
+  stroke-width: 2;
+}
+
+.portrait {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+}
+
+.figure .portrait + .portrait {
+  margin-top: 8px;
+}
+
+.attitude-strip {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 8px 0;
+}
+
+.strip-bg {
+  fill: #e8f1f5;
+}
+
+.strip-rule {
+  stroke: #b9c9d1;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.key-cg {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--ink) 50%, #fbf8f0 50%);
+}
+
+.key-cp {
+  width: 0;
+  height: 0;
+  border-top: 12px solid #1f6f8b;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+}
+
+.stop-scale {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.shot-view .button-small {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.dart-scene-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.turn-item {
+  margin: 16px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-soft);
+}
+
+.turn-item.sv-highlight .dart-cg,
+.figure.sv-highlight .dart-cg {
+  stroke: var(--stamp-ink);
+  stroke-width: 3;
+}
+
+.compare + .compare {
+  margin-top: 8px;
+}

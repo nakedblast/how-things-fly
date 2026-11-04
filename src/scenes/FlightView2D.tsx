@@ -18,6 +18,7 @@ export default function FlightView2D({ path, ghost, shot, reducedMotion }: Props
   const svg = useRef<SVGSVGElement>(null)
   const ball = useRef<SVGCircleElement>(null)
   const trail = useRef<SVGPolylineElement>(null)
+  const dart = useRef<SVGGElement>(null)
   const [screen, setScreen] = useState({ w: 0, h: 0 })
 
   useEffect(() => {
@@ -51,6 +52,8 @@ export default function FlightView2D({ path, ghost, shot, reducedMotion }: Props
   const step = tickStep(viewWidth)
   const marks = Array.from({ length: Math.floor(FAR / step) }, (_, i) => i * step)
   const bottom = 4 * u
+  // Drawn larger than life, like the ball, so its direction reads at any zoom.
+  const dartLength = Math.max(0.6, 7 * u)
 
   useEffect(() => {
     const viewBoxAt = (x: number) => {
@@ -66,6 +69,10 @@ export default function FlightView2D({ path, ghost, shot, reducedMotion }: Props
       trail.current?.setAttribute('points', pts.join(' '))
       ball.current?.setAttribute('cx', String(pos.x))
       ball.current?.setAttribute('cy', String(-pos.y))
+      if (path.pitchAt) {
+        const deg = (path.pitchAt(t) * 180) / Math.PI
+        dart.current?.setAttribute('transform', `translate(${pos.x},${-pos.y}) rotate(${-deg}) scale(${dartLength})`)
+      }
       svg.current?.setAttribute('viewBox', viewBoxAt(pos.x))
     }
     // Reduced motion: show the finished shot without animating it.
@@ -85,7 +92,7 @@ export default function FlightView2D({ path, ghost, shot, reducedMotion }: Props
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [path, shot, samples, flightTime, reducedMotion, follow, viewWidth, viewHeight, bottom, frame.x0, frame.x1])
+  }, [path, shot, samples, flightTime, reducedMotion, follow, viewWidth, viewHeight, bottom, frame.x0, frame.x1, dartLength])
 
   return (
     <svg
@@ -112,7 +119,15 @@ export default function FlightView2D({ path, ghost, shot, reducedMotion }: Props
       ))}
       {ghost && <polyline points={ghost.samples.map((s) => `${s.pos.x},${-s.pos.y}`).join(' ')} fill="none" stroke="#594f45" strokeWidth={2} strokeDasharray="7 5" vectorEffect="non-scaling-stroke" />}
       <polyline ref={trail} fill="none" stroke="#e8a33d" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <circle ref={ball} r={Math.max(0.4, 1.1 * u)} fill="#2a2420" />
+      {path.pitchAt ? (
+        <g ref={dart}>
+          {/* A unit-length dart, nose at +x; the transform scales and turns it. */}
+          <polygon points="0.5,0 0.4,-0.025 -0.5,-0.025 -0.5,0.025 0.4,0.025" fill="#b8862b" stroke="#2a2420" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+          <polygon points="-0.32,-0.025 -0.42,-0.1 -0.5,-0.1 -0.5,-0.025 -0.5,0.025 -0.5,0.1 -0.42,0.1 -0.32,0.025" fill="#a8322a" stroke="#2a2420" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+        </g>
+      ) : (
+        <circle ref={ball} r={Math.max(0.4, 1.1 * u)} fill="#2a2420" />
+      )}
     </svg>
   )
 }
