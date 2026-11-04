@@ -71,7 +71,9 @@ function Flight({
   )
 
   useFrame(({ camera }, dt) => {
-    clock.current += Math.min(dt, 0.1)
+    // Reduced motion: hold the finished shot, as the 2D view does.
+    if (reducedMotion) clock.current = flightTime
+    else clock.current += Math.min(dt, 0.1)
     if (clock.current > flightTime + PAUSE_AFTER_LANDING) clock.current = 0
     const pos = path.positionAt(clock.current)
 
