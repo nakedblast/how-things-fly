@@ -2,24 +2,25 @@ import { useMemo, useRef, type ComponentRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Line } from '@react-three/drei'
 import { Vector3, type Mesh } from 'three'
-import {
-  vacuumFlightTime,
-  vacuumPositionAt,
-  vacuumTrajectory,
-  type LaunchParams,
-} from '../physics/trajectory'
-import { FLAGS, RANGE_LENGTH, TRAIL_STEPS, WALL } from './rangeLayout'
+import type { FlightPath } from '../physics/path'
+import { frameFor } from './frame'
+import { FLAGS, RANGE_LENGTH, WALL } from './rangeLayout'
 
-type Props = { launch: LaunchParams; shot: number; reducedMotion: boolean }
+type Props = { path: FlightPath; ghost?: FlightPath; shot: number; reducedMotion: boolean }
 
 const PAUSE_AFTER_LANDING = 1.2 // s, then the shot replays
+const FOV = 50 // degrees, vertical
 
-// Draws the physics module's output; owns no physics itself.
-export default function FlightScene({ launch, shot, reducedMotion }: Props) {
+// Draws a precomputed flight path; owns no physics itself.
+export default function FlightScene({ path, ghost, shot, reducedMotion }: Props) {
+  const frame = frameFor([...path.samples, ...(ghost?.samples ?? [])].map((s) => s.pos))
+  // With reduced motion the camera holds a wide view of the whole shot, so the fog moves out with it.
+  const overview = overviewCamera(frame)
+  const fogFar = reducedMotion ? overview.distance * 3 : 260
   return (
-    <Canvas shadows dpr={[1, 2]} camera={{ position: [-10, 6, 22], fov: 50, far: 600 }}>
+    <Canvas shadows dpr={[1, 2]} camera={{ position: [-10, 6, 22], fov: FOV, far: 4000 }}>
       <color attach="background" args={['#cfe3ee']} />
-      <fog attach="fog" args={['#cfe3ee', 80, 260]} />
+      <fog attach="fog" args={['#cfe3ee', fogFar * 0.3, fogFar]} />
       <hemisphereLight args={['#ffffff', '#8a7f62', 0.8]} />
       <directionalLight
         position={[40, 60, 30]}
@@ -31,37 +32,55 @@ export default function FlightScene({ launch, shot, reducedMotion }: Props) {
         shadow-camera-top={40}
         shadow-camera-bottom={-40}
       />
-      <Environment />
-      <Flight key={shot} launch={launch} reducedMotion={reducedMotion} />
+      <Environment length={Math.max(RANGE_LENGTH, frame.x1)} />
+      <Flight key={shot} path={path} ghost={ghost} reducedMotion={reducedMotion} overview={overview} />
     </Canvas>
   )
 }
 
-function Flight({ launch, reducedMotion }: { launch: LaunchParams; reducedMotion: boolean }) {
+type Overview = { center: Vector3; distance: number }
+
+// A fixed side-on camera that fits the whole shot, for reduced motion.
+function overviewCamera(frame: { x0: number; x1: number; top: number }): Overview {
+  const center = new Vector3((frame.x0 + frame.x1) / 2, frame.top / 2, 0)
+  const halfHeight = Math.max(frame.top / 2 + 4, (frame.x1 - frame.x0) / 2 / (16 / 9))
+  return { center, distance: halfHeight / Math.tan((FOV * Math.PI) / 360) }
+}
+
+function Flight({
+  path,
+  ghost,
+  reducedMotion,
+  overview,
+}: Omit<Props, 'shot'> & { overview: Overview }) {
   const ball = useRef<Mesh>(null)
   const trail = useRef<ComponentRef<typeof Line>>(null)
   const clock = useRef(0)
   const lookAt = useRef(new Vector3())
   const desired = useMemo(() => new Vector3(), [])
 
-  const flightTime = vacuumFlightTime(launch)
+  const { flightTime } = path
   const points = useMemo(
-    () => vacuumTrajectory(launch, TRAIL_STEPS).map((s) => [s.pos.x, s.pos.y, 0] as [number, number, number]),
-    [launch],
+    () => path.samples.map((s) => [s.pos.x, s.pos.y, 0] as [number, number, number]),
+    [path],
+  )
+  const ghostPoints = useMemo(
+    () => ghost?.samples.map((s) => [s.pos.x, s.pos.y, 0] as [number, number, number]),
+    [ghost],
   )
 
   useFrame(({ camera }, dt) => {
     clock.current += Math.min(dt, 0.1)
     if (clock.current > flightTime + PAUSE_AFTER_LANDING) clock.current = 0
-    const pos = vacuumPositionAt(launch, clock.current)
+    const pos = path.positionAt(clock.current)
 
     ball.current?.position.set(pos.x, pos.y + 0.3, 0)
-    const segments = Math.ceil((Math.min(clock.current, flightTime) / flightTime) * TRAIL_STEPS)
+    const segments = Math.ceil((Math.min(clock.current, flightTime) / flightTime) * (points.length - 1))
     if (trail.current) trail.current.geometry.instanceCount = segments
 
     if (reducedMotion) {
-      camera.position.set(RANGE_LENGTH / 2, 30, 110)
-      camera.lookAt(RANGE_LENGTH / 2, 8, 0)
+      camera.position.set(overview.center.x, overview.center.y, overview.distance)
+      camera.lookAt(overview.center)
       return
     }
     const k = 1 - Math.exp(-dt * 3)
@@ -73,6 +92,9 @@ function Flight({ launch, reducedMotion }: { launch: LaunchParams; reducedMotion
 
   return (
     <>
+      {ghostPoints && (
+        <Line points={ghostPoints} color="#594f45" lineWidth={2} dashed dashSize={2} gapSize={1} />
+      )}
       <Line ref={trail} points={points} color="#e8a33d" lineWidth={3} />
       <mesh ref={ball} castShadow>
         <sphereGeometry args={[0.3, 24, 16]} />
@@ -82,12 +104,12 @@ function Flight({ launch, reducedMotion }: { launch: LaunchParams; reducedMotion
   )
 }
 
-function Environment() {
+function Environment({ length }: { length: number }) {
   const markers = useMemo(() => Array.from({ length: RANGE_LENGTH / 10 + 1 }, (_, i) => i * 10), [])
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} position={[RANGE_LENGTH / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[RANGE_LENGTH + 200, 200]} />
+      <mesh rotation-x={-Math.PI / 2} position={[length / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[length + 200, 200]} />
         <meshStandardMaterial color="#9fb37a" />
       </mesh>
       {markers.map((x) => (

@@ -35,11 +35,21 @@ export interface LessonProgress {
   medals: Medal[]
 }
 
+export interface RangeSetup {
+  speed: number
+  angleDeg: number
+  air: boolean
+  airDensity: number
+  mass: number
+  diameter: number // mm in the rack; converted to metres when building physics parameters
+}
+
 export interface Progress {
   version: typeof SCHEMA_VERSION
   lessons: Record<string, LessonProgress>
   /** The last lesson opened, for "continue reading" on the cover. */
   lastLessonId?: string
+  range?: RangeSetup
 }
 
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
@@ -58,6 +68,18 @@ const MYTHS: readonly string[] = ['changed-my-mind', 'saw-through-it']
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
+function parseRange(raw: unknown): RangeSetup | undefined {
+  if (!isRecord(raw)) return undefined
+  const { speed, angleDeg, air, airDensity, mass, diameter } = raw
+  if (typeof speed !== 'number' || !Number.isFinite(speed)
+    || typeof angleDeg !== 'number' || !Number.isFinite(angleDeg)
+    || typeof air !== 'boolean'
+    || typeof airDensity !== 'number' || !Number.isFinite(airDensity)
+    || typeof mass !== 'number' || !Number.isFinite(mass)
+    || typeof diameter !== 'number' || !Number.isFinite(diameter)) return undefined
+  return { speed, angleDeg, air, airDensity, mass, diameter }
 }
 
 function parsePrediction(raw: unknown): Prediction | null {
@@ -111,6 +133,8 @@ export function parseProgress(json: string | null): Progress {
     if (lesson) progress.lessons[id] = lesson
   }
   if (typeof raw.lastLessonId === 'string') progress.lastLessonId = raw.lastLessonId
+  const range = parseRange(raw.range)
+  if (range) progress.range = range
   return progress
 }
 
@@ -128,6 +152,7 @@ export interface ProgressStore {
   awardStamp(lessonId: string): void
   awardMedal(lessonId: string, medal: Medal): void
   openLesson(lessonId: string): void
+  setRange(setup: RangeSetup): void
   reset(): void
   /** Reloads from storage, e.g. after another tab changed it. */
   reload(): void
@@ -217,6 +242,10 @@ export function createProgressStore(storage: StorageLike | null, now: () => Date
     openLesson: (lessonId) =>
       update((draft) => {
         draft.lastLessonId = lessonId
+      }),
+    setRange: (setup) =>
+      update((draft) => {
+        draft.range = { ...setup }
       }),
     reset() {
       state = emptyProgress()
