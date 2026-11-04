@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { controlState, EQUIPMENT, type Equipment } from './equipment'
+import { lessonById } from './lessons'
 import { createProgressStore, emptyProgress } from './progress'
 
 function equipment(id: string): Equipment {
@@ -38,6 +39,20 @@ describe('controlState', () => {
     expect(controlState(equipment('fins'), store.getSnapshot())).toBe('locked')
     store.awardStamp('staying-pointed')
     expect(controlState(equipment('fins'), store.getSnapshot())).toBe('issued')
+  })
+
+  it('issues the lesson 9 supersonic control early and lesson 10 controls on its stamp', () => {
+    const store = createProgressStore(null)
+    expect(controlState(equipment('supersonic'), store.getSnapshot())).toBe('early-issue')
+    for (const id of ['wind', 'altitude', 'earthRotation']) {
+      expect(controlState(equipment(id), store.getSnapshot())).toBe(
+        lessonById('the-long-shot')?.built ? 'locked' : 'early-issue',
+      )
+    }
+    store.awardStamp('the-long-shot')
+    for (const id of ['wind', 'altitude', 'earthRotation']) {
+      expect(controlState(equipment(id), store.getSnapshot())).toBe('issued')
+    }
   })
 
   it('keeps unbuilt equipment unavailable even with its lesson stamp', () => {

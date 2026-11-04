@@ -24,10 +24,10 @@ export const EQUIPMENT: readonly Equipment[] = [
   { id: 'spinRate', lessonId: 'spin', label: 'Spin rate', note: 'Lesson 6 issues the spin control for your projectiles.', working: false },
   { id: 'spinAxis', lessonId: 'magnus', label: 'Spin axis', note: 'Lesson 7 issues the spin axis control to explore curved flight.', working: false },
   { id: 'profile', lessonId: 'shape-is-speed', label: 'Profile designer', note: 'Lesson 8 issues the tools to change projectile shape.', working: false },
-  { id: 'supersonic', lessonId: 'sound-barrier', label: 'Supersonic speeds', note: 'Lesson 9 issues the equipment for flight beyond the speed of sound.', working: false },
-  { id: 'wind', lessonId: 'the-long-shot', label: 'Wind', note: 'Lesson 10 issues the wind control for the long shot.', working: false },
-  { id: 'altitude', lessonId: 'the-long-shot', label: 'Altitude', note: 'Lesson 10 issues the altitude control for the long shot.', working: false },
-  { id: 'earthRotation', lessonId: 'the-long-shot', label: 'Earth rotation', note: 'Lesson 10 issues the Earth rotation control for the long shot.', working: false },
+  { id: 'supersonic', lessonId: 'sound-barrier', label: 'Supersonic speeds', note: 'Early issue from lesson 9: raise the range ball speed limit and explore a published sphere drag curve.', working: true },
+  { id: 'wind', lessonId: 'the-long-shot', label: 'Wind', note: 'Lesson 10 issues headwind and crosswind controls for the long shot.', working: true },
+  { id: 'altitude', lessonId: 'the-long-shot', label: 'Altitude', note: 'Lesson 10 issues air that thins with height.', working: true },
+  { id: 'earthRotation', lessonId: 'the-long-shot', label: 'Earth rotation', note: 'Lesson 10 issues the latitude and Earth rotation controls for the long shot.', working: true },
 ]
 
 export type ControlState = 'issued' | 'early-issue' | 'locked' | 'not-yet-built'

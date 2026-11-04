@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { constantAtmosphere, geopotentialAltitude, standardAtmosphere } from './atmosphere'
+import { constantAtmosphere, geopotentialAltitude, scaledStandardAtmosphere, standardAtmosphere } from './atmosphere'
 
 function close(actual: number, reference: number, abs: number, rel: number) {
   expect(Math.abs(actual - reference)).toBeLessThanOrEqual(abs + rel * Math.abs(reference))
@@ -100,5 +100,28 @@ describe('constantAtmosphere and input checks', () => {
     }
     for (const density of [-1, NaN, Infinity]) expect(() => constantAtmosphere(density)).toThrow(RangeError)
     for (const temperature of [0, -1, NaN, Infinity]) expect(() => constantAtmosphere(1, temperature)).toThrow(RangeError)
+  })
+})
+
+describe('scaledStandardAtmosphere', () => {
+  it('sets the sea-level density and retains the standard temperature and sound-speed profile', () => {
+    const groundDensity = 0.6
+    const scaled = scaledStandardAtmosphere(groundDensity)
+    expect(scaled(0).density).toBeCloseTo(groundDensity, 12)
+    expect(scaled(10_000).density / scaled(0).density).toBeCloseTo(
+      standardAtmosphere(10_000).density / standardAtmosphere(0).density,
+      12,
+    )
+    expect(scaled(10_000).temperature).toBe(standardAtmosphere(10_000).temperature)
+    expect(scaled(10_000).speedOfSound).toBe(standardAtmosphere(10_000).speedOfSound)
+    expect(scaled(10_000).pressure / standardAtmosphere(10_000).pressure).toBeCloseTo(
+      groundDensity / standardAtmosphere(0).density,
+      12,
+    )
+  })
+
+  it('accepts zero density and rejects invalid ground density', () => {
+    expect(scaledStandardAtmosphere(0)(0).density).toBe(0)
+    for (const density of [-1, NaN, Infinity]) expect(() => scaledStandardAtmosphere(density)).toThrow(RangeError)
   })
 })

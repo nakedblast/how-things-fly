@@ -14,11 +14,14 @@ export function Reward({
   lesson,
   figure,
   unlockNote,
+  stampBook,
   changedNote = 'You started out with the old idea, the same one gunners held for centuries, and then proved the real one.',
 }: {
   lesson: Lesson
   figure: ReactNode
   unlockNote: string
+  /** Optional capstone stamp-book section. */
+  stampBook?: ReactNode
   /** The "Changed my mind" sentence: who else held the old idea. */
   changedNote?: string
 }) {
@@ -47,6 +50,7 @@ export function Reward({
         {figure}
       </section>
 
+      {stampBook}
       <section className="issued" aria-labelledby="reward-issued">
         <h3 id="reward-issued">Range equipment issued: {lesson.unlocks.toLowerCase()}</h3>
         <p>{unlockNote}</p>
