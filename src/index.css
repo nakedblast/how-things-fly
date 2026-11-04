@@ -1367,3 +1367,70 @@ h1:focus:not(:focus-visible) {
 .compare + .compare {
   margin-top: 8px;
 }
+
+/* The long shot: two SVG instruments with DOM controls and readouts. */
+.ls-lesson, .ls-lesson .puzzle, .ls-lesson .controls {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ls-figure {
+  margin: 20px 0;
+}
+
+.ls-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #eee8da;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.ls-figure svg[tabindex] {
+  cursor: crosshair;
+  touch-action: manipulation;
+}
+
+.ls-figure svg:focus-visible {
+  outline: 3px solid var(--stamp-ink);
+  outline-offset: 3px;
+}
+
+.ls-figure text {
+  font: 14px system-ui, sans-serif;
+  fill: var(--ink);
+}
+
+.ls-grid {
+  stroke: #9c9589;
+  stroke-width: 0.6;
+  fill: none;
+}
+
+.ls-trail {
+  fill: none;
+  stroke: var(--stamp-ink);
+  stroke-width: 2.5;
+}
+
+.ls-ghost {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+
+.ls-highlight {
+  outline: 2px dashed var(--ink);
+  outline-offset: 6px;
+}
+
+.ls-lesson input[type='range'], .ls-lesson .scrub {
+  min-width: 0;
+  width: 100%;
+}
+
+.ls-lesson .controls .choice {
+  display: flex;
+}

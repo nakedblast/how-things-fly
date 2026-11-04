@@ -29,6 +29,9 @@ export function Logbook() {
           Qualifications <span className="count">{stamped.length} of {LESSONS.length}</span>
         </h2>
         <p className="hint">A stamp is pressed when you pass a lesson's final challenge.</p>
+        {LESSONS.filter((l) => l.built).every((l) => progress.lessons[l.id]?.stampEarnedAt) && (
+          <p className="result result-pass">Range qualification complete</p>
+        )}
         <ul className="stamp-grid">
           {LESSONS.map((l) => {
             const earned = Boolean(progress.lessons[l.id]?.stampEarnedAt)

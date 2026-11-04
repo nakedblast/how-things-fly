@@ -119,9 +119,9 @@ export const LESSONS: readonly Lesson[] = [
     number: 10,
     act: 4,
     title: 'The long shot',
-    hook: 'In 1918 a gun fired on Paris from far beyond the horizon. What did its crew have to allow for that nobody had needed before?',
+    hook: 'Final qualification: a marker far beyond the horizon. If you aim straight at it, will a fast projectile go straight to it?',
     unlocks: 'Wind, altitude and Earth rotation',
-    built: false,
+    built: true,
   },
 ]
 

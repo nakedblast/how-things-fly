@@ -2,6 +2,7 @@
 
 import type { DartFlight } from './dart'
 import { flightPositionAt, simulateFlight, type FlightParams } from './flight'
+import type { Flight3D } from './flight3d'
 import {
   vacuumApexHeight,
   vacuumFlightTime,
@@ -18,6 +19,8 @@ export interface FlightPath {
   flightTime: number // s
   range: number // m
   apexHeight: number // m
+  /** Signed landing drift in the source model's lateral axis; positive is right. */
+  lateralDrift?: number
   /** Position at time t, clamped to [0, flightTime]. */
   positionAt(t: number): Vec2
   /** Body angle above the horizontal at time t, radians, for projectiles that point somewhere. */
@@ -91,6 +94,33 @@ export function dragPath(params: FlightParams, steps = DEFAULT_PATH_STEPS): Flig
     flightTime: flight.flightTime,
     range: flight.range,
     apexHeight: flight.apex.pos.y,
+    positionAt,
+  }
+}
+
+/** Projects a flat-earth 3D flight onto the existing side-view axes and keeps its cross-range drift. */
+export function flight3dPath(flight: Flight3D, steps = DEFAULT_PATH_STEPS): FlightPath {
+  const source = flight.samples
+  const positionAt = (t: number): Vec2 => {
+    const c = Math.min(Math.max(t, 0), flight.flightTime)
+    let lo = 0
+    let hi = source.length - 1
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1
+      if (source[mid].t <= c) lo = mid
+      else hi = mid
+    }
+    const a = source[lo]
+    const b = source[hi]
+    const u = b.t > a.t ? (c - a.t) / (b.t - a.t) : 0
+    return { x: a.pos.x + (b.pos.x - a.pos.x) * u, y: a.pos.y + (b.pos.y - a.pos.y) * u }
+  }
+  return {
+    samples: evenSamples(flight.flightTime, positionAt, steps),
+    flightTime: flight.flightTime,
+    range: flight.range,
+    apexHeight: flight.apex.pos.y,
+    lateralDrift: flight.drift,
     positionAt,
   }
 }

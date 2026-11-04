@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { simulateDart, type Dart } from './dart'
-import { dartPath, dragPath, vacuumPath } from './path'
+import { constantAtmosphere } from './atmosphere'
+import { simulateFlight3D } from './flight3d'
+import { dartPath, dragPath, flight3dPath, vacuumPath } from './path'
+import type { Flight3D } from './flight3d'
 import { vacuumApexHeight, vacuumRange } from './trajectory'
 
 const launch = { speed: 30, angleDeg: 45 }
@@ -51,5 +54,49 @@ describe('flight paths', () => {
     expect(path.pitchAt!(mid)).toBeCloseTo((a.pitch + b.pitch) / 2, 12)
     expect(path.positionAt(mid).x).toBeCloseTo((a.pos.x + b.pos.x) / 2, 12)
     expect(path.positionAt(99).x).toBe(flight.range)
+  })
+
+  it('projects a 3D flight to downrange and height while retaining signed landing drift', () => {
+    const flight: Flight3D = {
+      samples: [
+        { t: 0, pos: { x: 0, y: 0, z: 0 }, vel: { x: 100, y: 0, z: 0 } },
+        { t: 1, pos: { x: 100, y: 20, z: -4 }, vel: { x: 100, y: -10, z: -4 } },
+        { t: 2, pos: { x: 200, y: 0, z: -8 }, vel: { x: 100, y: -20, z: -4 } },
+      ],
+      landed: true,
+      flightTime: 2,
+      range: 200,
+      drift: -8,
+      apex: { t: 1, pos: { x: 100, y: 20, z: -4 }, vel: { x: 100, y: 0, z: -4 } },
+      impactSpeed: 100,
+    }
+    const path = flight3dPath(flight, 4)
+    expect(path.range).toBe(200)
+    expect(path.apexHeight).toBe(20)
+    expect(path.lateralDrift).toBe(-8)
+    expect(path.samples).toHaveLength(5)
+    expect(path.samples[0]).toEqual({ t: 0, pos: { x: 0, y: 0 } })
+    expect(path.samples.at(-1)).toEqual({ t: 2, pos: { x: 200, y: 0 } })
+    expect(path.positionAt(0.5)).toEqual({ x: 50, y: 10 })
+    expect(path.positionAt(2)).toEqual({ x: 200, y: 0 })
+  })
+
+  it('keeps a bounded high-speed, high-drag ball flight finite with an adaptive step', () => {
+    const mass = 0.01
+    const diameter = 0.25
+    const speed = 1600
+    const density = 1.5
+    const areaPerMass = (Math.PI * diameter ** 2) / (8 * mass)
+    const timeStep = 0.12 / (density * areaPerMass * 1.05 * speed)
+    const flight = simulateFlight3D({
+      launch: { speed, elevationDeg: 45 },
+      projectile: { mass, diameter, drag: 1.05 },
+      environment: { atmosphere: constantAtmosphere(density) },
+      timeStep,
+      maxTime: 0.25,
+    })
+    expect(flight.samples.length).toBeGreaterThan(2)
+    expect(flight.samples.every((sample) => Object.values(sample.pos).every(Number.isFinite))).toBe(true)
+    expect(Number.isFinite(flight.impactSpeed)).toBe(true)
   })
 })

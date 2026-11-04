@@ -70,3 +70,13 @@ export function constantAtmosphere(density: number, temperature = 288.15): Atmos
   nonnegative(pressure, 'pressure')
   return () => state(temperature, pressure, density)
 }
+
+/** Scales standard-atmosphere pressure and density while preserving temperature and sound speed. */
+export function scaledStandardAtmosphere(groundDensity: number): Atmosphere {
+  nonnegative(groundDensity, 'groundDensity')
+  const densityScale = groundDensity / standardAtmosphere(0).density
+  return (altitude) => {
+    const air = standardAtmosphere(altitude)
+    return { ...air, pressure: air.pressure * densityScale, density: air.density * densityScale }
+  }
+}

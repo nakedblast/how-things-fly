@@ -44,6 +44,12 @@ export interface RangeSetup {
   diameter: number // mm in the rack; converted to metres when building physics parameters
   /** Fly the finned dart instead of the ball; missing in saves from before lesson 5. */
   fins?: boolean
+  /** Constant local wind components: headwind positive, crosswind from left positive. */
+  wind?: { head: number; cross: number }
+  thinAir?: boolean
+  earthRotation?: boolean
+  latitudeDeg?: number
+  supersonic?: boolean
 }
 
 export interface Progress {
@@ -83,6 +89,18 @@ function parseRange(raw: unknown): RangeSetup | undefined {
     || typeof diameter !== 'number' || !Number.isFinite(diameter)) return undefined
   const setup: RangeSetup = { speed, angleDeg, air, airDensity, mass, diameter }
   if (typeof raw.fins === 'boolean') setup.fins = raw.fins
+  if (isRecord(raw.wind)
+    && typeof raw.wind.head === 'number' && Number.isFinite(raw.wind.head)
+    && typeof raw.wind.cross === 'number' && Number.isFinite(raw.wind.cross)
+    && raw.wind.head >= -20 && raw.wind.head <= 20
+    && raw.wind.cross >= -20 && raw.wind.cross <= 20) {
+    setup.wind = { head: raw.wind.head, cross: raw.wind.cross }
+  }
+  if (typeof raw.thinAir === 'boolean') setup.thinAir = raw.thinAir
+  if (typeof raw.earthRotation === 'boolean') setup.earthRotation = raw.earthRotation
+  if (typeof raw.latitudeDeg === 'number' && Number.isFinite(raw.latitudeDeg)
+    && raw.latitudeDeg >= -80 && raw.latitudeDeg <= 80) setup.latitudeDeg = raw.latitudeDeg
+  if (typeof raw.supersonic === 'boolean') setup.supersonic = raw.supersonic
   return setup
 }
 

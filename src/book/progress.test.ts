@@ -47,6 +47,21 @@ describe('progress store', () => {
     expect(createProgressStore(storage).getSnapshot().range).toEqual(rangeSetup)
   })
 
+  it('round-trips optional lesson 10 controls and accepts saves without them', () => {
+    const storage = memoryStorage()
+    const updated: RangeSetup = {
+      ...rangeSetup,
+      wind: { head: 6, cross: -12 },
+      thinAir: true,
+      earthRotation: true,
+      latitudeDeg: -49,
+      supersonic: true,
+    }
+    createProgressStore(storage).setRange(updated)
+    expect(createProgressStore(storage).getSnapshot().range).toEqual(updated)
+    expect(parseProgress(JSON.stringify({ version: 1, lessons: {}, range: rangeSetup })).range).toEqual(rangeSetup)
+  })
+
   it('survives a reload: a new store on the same storage sees the same progress', () => {
     const storage = memoryStorage()
     const a = createProgressStore(storage, fixedNow)
@@ -157,6 +172,24 @@ describe('parseProgress', () => {
       expect(loaded.lessons).toEqual(lessons)
     }
     expect(parseProgress('{"version":1,"lessons":{},"range":{"speed":1e400,"angleDeg":30,"air":true,"airDensity":0.6,"mass":0.145,"diameter":74}}').range).toBeUndefined()
+  })
+
+  it('drops malformed optional controls individually and preserves the base range', () => {
+    const optionalFields: Record<string, unknown>[] = [
+      { wind: { head: '4', cross: 2 } },
+      { wind: { head: 4, cross: Infinity } },
+      { wind: { head: 21, cross: 2 } },
+      { wind: null },
+      { thinAir: 1 },
+      { earthRotation: 'true' },
+      { latitudeDeg: 81 },
+      { latitudeDeg: NaN },
+      { supersonic: 1 },
+    ]
+    for (const optional of optionalFields) {
+      const loaded = parseProgress(JSON.stringify({ version: 1, lessons: {}, range: { ...rangeSetup, ...optional } }))
+      expect(loaded.range).toEqual(rangeSetup)
+    }
   })
 
   it('starts fresh on missing, damaged or other-version data', () => {
