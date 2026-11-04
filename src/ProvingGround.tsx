@@ -73,6 +73,16 @@ const RANGE_SOURCES = [
     note: 'Standard sea-level air density is 1.225 kg/m³.',
   },
   {
+    label: 'NIST — standard acceleration of gravity',
+    url: 'https://physics.nist.gov/cgi-bin/cuu/Value?gn',
+    note: 'Every flight uses g = 9.80665 m/s².',
+  },
+  {
+    label: 'NASA NSSDCA — Earth Fact Sheet',
+    url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html',
+    note: 'The Earth rotation control turns at 7.292 × 10⁻⁵ rad/s, from the 23.9345 h sidereal day.',
+  },
+  {
     label: 'FAA Advisory Circular AC 450.115-1A — sphere drag coefficients',
     url: 'https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_450.115-1A.pdf',
     note: 'Section 9.2.1, Table 1 (p. 35) gives the sphere Cd reference curve from Mach 0.3 to 10. The proving ground keeps Cd 0.47 through Mach 0.5, then interpolates the published points linearly. It is an illustrative reference, not a correction for every ball size or Reynolds-number regime.',
