@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createProgressStore, parseProgress, STORAGE_KEY, type StorageLike } from './progress'
+import { createProgressStore, parseProgress, STORAGE_KEY, type RangeSetup, type StorageLike } from './progress'
 
 function memoryStorage(): StorageLike & { data: Map<string, string> } {
   const data = new Map<string, string>()
@@ -24,8 +24,21 @@ const brokenStorage: StorageLike = {
 }
 
 const fixedNow = () => new Date('2026-11-03T12:00:00Z')
+const rangeSetup: RangeSetup = { speed: 50, angleDeg: 30, air: true, airDensity: 0.6, mass: 0.145, diameter: 74 }
 
 describe('progress store', () => {
+  it('round-trips the range setup without changing lesson progress', () => {
+    const storage = memoryStorage()
+    const store = createProgressStore(storage, fixedNow)
+    store.awardStamp('the-arc')
+    store.setRange(rangeSetup)
+    const loaded = createProgressStore(storage).getSnapshot()
+    expect(loaded).toEqual(store.getSnapshot())
+    expect(loaded.range).toEqual(rangeSetup)
+    expect(loaded.version).toBe(1)
+    expect(loaded.lessons['the-arc'].stampEarnedAt).toBe(fixedNow().toISOString())
+  })
+
   it('survives a reload: a new store on the same storage sees the same progress', () => {
     const storage = memoryStorage()
     const a = createProgressStore(storage, fixedNow)
@@ -88,10 +101,13 @@ describe('progress store', () => {
     const storage = memoryStorage()
     const store = createProgressStore(storage)
     store.awardStamp('the-arc')
+    store.setRange(rangeSetup)
     store.reset()
     expect(storage.data.has(STORAGE_KEY)).toBe(false)
     expect(store.getSnapshot().lessons).toEqual({})
     expect(createProgressStore(storage).getSnapshot().lessons).toEqual({})
+    expect(store.getSnapshot().range).toBeUndefined()
+    expect(createProgressStore(storage).getSnapshot().range).toBeUndefined()
   })
 
   it('still works in memory when storage throws, and reports it is not persistent', () => {
@@ -112,6 +128,29 @@ describe('progress store', () => {
 })
 
 describe('parseProgress', () => {
+  it('loads an old save without a range setup', () => {
+    const loaded = parseProgress('{"version":1,"lessons":{"the-arc":{"step":"reward","predictions":[],"medals":[],"stampEarnedAt":"saved"}}}')
+    expect(loaded.range).toBeUndefined()
+    expect(loaded.lessons['the-arc'].stampEarnedAt).toBe('saved')
+  })
+
+  it('drops the whole damaged range while keeping lessons', () => {
+    const lessons = { 'the-arc': { step: 'reward', predictions: [], medals: [], stampEarnedAt: 'saved' } }
+    for (const key of ['speed', 'angleDeg', 'airDensity', 'mass', 'diameter'] as const) {
+      for (const bad of [undefined, null, '30', true, NaN, Infinity, -Infinity]) {
+        const loaded = parseProgress(JSON.stringify({ version: 1, lessons, range: { ...rangeSetup, [key]: bad } }))
+        expect(loaded.range).toBeUndefined()
+        expect(loaded.lessons).toEqual(lessons)
+      }
+    }
+    for (const air of [undefined, null, 'true', 1]) {
+      const loaded = parseProgress(JSON.stringify({ version: 1, lessons, range: { ...rangeSetup, air } }))
+      expect(loaded.range).toBeUndefined()
+      expect(loaded.lessons).toEqual(lessons)
+    }
+    expect(parseProgress('{"version":1,"lessons":{},"range":{"speed":1e400,"angleDeg":30,"air":true,"airDensity":0.6,"mass":0.145,"diameter":74}}').range).toBeUndefined()
+  })
+
   it('starts fresh on missing, damaged or other-version data', () => {
     for (const json of [null, '', '{', '[]', '{"version":2,"lessons":{}}', '{"version":1}']) {
       expect(parseProgress(json)).toEqual({ version: 1, lessons: {} })

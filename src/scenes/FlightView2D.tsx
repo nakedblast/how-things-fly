@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { vacuumFlightTime, vacuumPositionAt, vacuumTrajectory, type LaunchParams } from '../physics/trajectory'
+import { useEffect, useRef, useState } from 'react'
+import type { FlightPath } from '../physics/path'
 import { frameFor, tickStep } from './frame'
-import { FLAGS, TRAIL_STEPS, WALL } from './rangeLayout'
+import { FLAGS, WALL } from './rangeLayout'
 
-type Props = { launch: LaunchParams; shot: number; reducedMotion: boolean }
+type Props = { path: FlightPath; ghost?: FlightPath; shot: number; reducedMotion: boolean }
 
 const PAUSE_AFTER_LANDING = 1.2 // s, then the shot replays
 const FAR = 1000 // m of sky and ground drawn beyond the frame, for the letterbox space
@@ -14,7 +14,7 @@ const SHOT_SHARE = 0.5 // share of the screen height the shot may fill (the cont
 // The view is framed to the shot rather than the whole range. Where the screen is tall and narrow
 // (a portrait phone), fitting the whole shot across the width would leave it tiny under empty sky,
 // so the view zooms in, up to MAX_ZOOM, and pans to follow the ball.
-export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
+export default function FlightView2D({ path, ghost, shot, reducedMotion }: Props) {
   const svg = useRef<SVGSVGElement>(null)
   const ball = useRef<SVGCircleElement>(null)
   const trail = useRef<SVGPolylineElement>(null)
@@ -30,10 +30,9 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
     return () => observer.disconnect()
   }, [])
 
-  const flightTime = vacuumFlightTime(launch)
-  const samples = useMemo(() => vacuumTrajectory(launch, TRAIL_STEPS), [launch])
+  const { flightTime, samples } = path
   const frame = frameFor(
-    samples.map((s) => s.pos),
+    [...samples, ...(ghost?.samples ?? [])].map((s) => s.pos),
     { minWidth: 45, minAspect: 0.2 },
   )
   const frameWidth = frame.x1 - frame.x0
@@ -59,9 +58,10 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
       return `${x0} ${bottom - viewHeight} ${viewWidth} ${viewHeight}`
     }
     const show = (t: number) => {
-      const pos = vacuumPositionAt(launch, t)
-      const n = Math.ceil((Math.min(t, flightTime) / flightTime) * TRAIL_STEPS)
-      const pts = samples.slice(0, n).map((s) => `${s.pos.x},${-s.pos.y}`)
+      const pos = path.positionAt(t)
+      const n = samples.findIndex((s) => s.t > t)
+      const end = n === -1 ? samples.length : n
+      const pts = samples.slice(0, end).map((s) => `${s.pos.x},${-s.pos.y}`)
       pts.push(`${pos.x},${-pos.y}`)
       trail.current?.setAttribute('points', pts.join(' '))
       ball.current?.setAttribute('cx', String(pos.x))
@@ -85,7 +85,7 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [launch, shot, samples, flightTime, reducedMotion, follow, viewWidth, viewHeight, bottom, frame.x0, frame.x1])
+  }, [path, shot, samples, flightTime, reducedMotion, follow, viewWidth, viewHeight, bottom, frame.x0, frame.x1])
 
   return (
     <svg
@@ -110,6 +110,7 @@ export default function FlightView2D({ launch, shot, reducedMotion }: Props) {
           <polygon points={`${f.x},-3 ${f.x + 1.2},-2.6 ${f.x},-2.2`} fill={f.color} />
         </g>
       ))}
+      {ghost && <polyline points={ghost.samples.map((s) => `${s.pos.x},${-s.pos.y}`).join(' ')} fill="none" stroke="#594f45" strokeWidth={2} strokeDasharray="7 5" vectorEffect="non-scaling-stroke" />}
       <polyline ref={trail} fill="none" stroke="#e8a33d" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       <circle ref={ball} r={Math.max(0.4, 1.1 * u)} fill="#2a2420" />
     </svg>

@@ -473,6 +473,138 @@ h1:focus:not(:focus-visible) {
   opacity: 0.45;
 }
 
+/* Proving ground */
+
+.proving-ground {
+  display: grid;
+  grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  height: auto;
+  min-height: 100dvh;
+  padding: 16px;
+}
+
+.proving-ground .panel {
+  position: static;
+  min-width: 0;
+  max-width: none;
+}
+
+.proving-header {
+  grid-column: 1 / -1;
+}
+
+.proving-header button {
+  min-height: 36px;
+}
+
+.proving-header button:disabled {
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.proving-rack h2 {
+  margin: 0 0 16px;
+  font-size: 1.2rem;
+}
+
+.rack-group {
+  min-width: 0;
+  margin: 0 0 20px;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.rack-group legend {
+  max-width: 100%;
+  padding: 0 8px 0 0;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.rack-list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rack-label {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.rack-item input[type='range'] {
+  width: 100%;
+  min-width: 0;
+  min-height: 28px;
+  margin: 0;
+}
+
+.panel .rack-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  font-weight: bold;
+}
+
+.rack-switch input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+.panel .equipment-state {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.rack-item[data-state='issued'] .equipment-state {
+  color: var(--stamp-ink);
+}
+
+.proving-rack .sources {
+  margin: 24px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.proving-stage {
+  position: sticky;
+  inset: auto;
+  top: 16px;
+  min-width: 0;
+  height: clamp(20rem, 70dvh, 60rem);
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: #cfe3ee;
+}
+
+@media (max-width: 720px) {
+  .proving-ground {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .proving-stage {
+    position: relative;
+    top: auto;
+    grid-row: 2;
+    height: clamp(20rem, 55dvh, 32rem);
+  }
+
+  .proving-rack {
+    grid-row: 3;
+  }
+}
+
 /* Lesson template */
 
 .visually-hidden {
