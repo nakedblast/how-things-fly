@@ -1,7 +1,7 @@
 import { useMemo, useRef, type ComponentRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Line } from '@react-three/drei'
-import { Vector3, type Mesh } from 'three'
+import { Vector3, type Group, type Mesh } from 'three'
 import type { FlightPath } from '../physics/path'
 import { frameFor } from './frame'
 import { FLAGS, RANGE_LENGTH, WALL } from './rangeLayout'
@@ -54,6 +54,7 @@ function Flight({
   overview,
 }: Omit<Props, 'shot'> & { overview: Overview }) {
   const ball = useRef<Mesh>(null)
+  const dart = useRef<Group>(null)
   const trail = useRef<ComponentRef<typeof Line>>(null)
   const clock = useRef(0)
   const lookAt = useRef(new Vector3())
@@ -75,6 +76,10 @@ function Flight({
     const pos = path.positionAt(clock.current)
 
     ball.current?.position.set(pos.x, pos.y + 0.3, 0)
+    if (path.pitchAt) {
+      dart.current?.position.set(pos.x, pos.y + 0.3, 0)
+      dart.current?.rotation.set(0, 0, path.pitchAt(Math.min(clock.current, flightTime)))
+    }
     const segments = Math.ceil((Math.min(clock.current, flightTime) / flightTime) * (points.length - 1))
     if (trail.current) trail.current.geometry.instanceCount = segments
 
@@ -96,10 +101,30 @@ function Flight({
         <Line points={ghostPoints} color="#594f45" lineWidth={2} dashed dashSize={2} gapSize={1} />
       )}
       <Line ref={trail} points={points} color="#e8a33d" lineWidth={3} />
-      <mesh ref={ball} castShadow>
-        <sphereGeometry args={[0.3, 24, 16]} />
-        <meshStandardMaterial color="#2a2420" metalness={0.3} roughness={0.5} />
-      </mesh>
+      {path.pitchAt ? (
+        // Drawn three times life size, like the ball, so its direction reads from the chase camera.
+        <group ref={dart} scale={3}>
+          <mesh rotation-z={-Math.PI / 2} castShadow>
+            <cylinderGeometry args={[0.0125, 0.0125, 0.54, 16]} />
+            <meshStandardMaterial color="#b8862b" metalness={0.4} roughness={0.5} />
+          </mesh>
+          <mesh position={[0.3, 0, 0]} rotation-z={-Math.PI / 2} castShadow>
+            <coneGeometry args={[0.0125, 0.06, 16]} />
+            <meshStandardMaterial color="#b8862b" metalness={0.4} roughness={0.5} />
+          </mesh>
+          {[0, Math.PI / 2].map((r) => (
+            <mesh key={r} position={[-0.245, 0, 0]} rotation-x={r} castShadow>
+              <boxGeometry args={[0.05, 0.075, 0.003]} />
+              <meshStandardMaterial color="#a8322a" />
+            </mesh>
+          ))}
+        </group>
+      ) : (
+        <mesh ref={ball} castShadow>
+          <sphereGeometry args={[0.3, 24, 16]} />
+          <meshStandardMaterial color="#2a2420" metalness={0.3} roughness={0.5} />
+        </mesh>
+      )}
     </>
   )
 }

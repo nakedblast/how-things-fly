@@ -39,6 +39,14 @@ describe('progress store', () => {
     expect(loaded.lessons['the-arc'].stampEarnedAt).toBe(fixedNow().toISOString())
   })
 
+  it('keeps the fins switch when saved and loads older setups without it', () => {
+    const storage = memoryStorage()
+    createProgressStore(storage).setRange({ ...rangeSetup, fins: true })
+    expect(createProgressStore(storage).getSnapshot().range?.fins).toBe(true)
+    createProgressStore(storage).setRange(rangeSetup)
+    expect(createProgressStore(storage).getSnapshot().range).toEqual(rangeSetup)
+  })
+
   it('survives a reload: a new store on the same storage sees the same progress', () => {
     const storage = memoryStorage()
     const a = createProgressStore(storage, fixedNow)

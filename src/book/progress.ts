@@ -42,6 +42,8 @@ export interface RangeSetup {
   airDensity: number
   mass: number
   diameter: number // mm in the rack; converted to metres when building physics parameters
+  /** Fly the finned dart instead of the ball; missing in saves from before lesson 5. */
+  fins?: boolean
 }
 
 export interface Progress {
@@ -79,7 +81,9 @@ function parseRange(raw: unknown): RangeSetup | undefined {
     || typeof airDensity !== 'number' || !Number.isFinite(airDensity)
     || typeof mass !== 'number' || !Number.isFinite(mass)
     || typeof diameter !== 'number' || !Number.isFinite(diameter)) return undefined
-  return { speed, angleDeg, air, airDensity, mass, diameter }
+  const setup: RangeSetup = { speed, angleDeg, air, airDensity, mass, diameter }
+  if (typeof raw.fins === 'boolean') setup.fins = raw.fins
+  return setup
 }
 
 function parsePrediction(raw: unknown): Prediction | null {
